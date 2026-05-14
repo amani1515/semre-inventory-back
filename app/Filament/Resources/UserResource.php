@@ -31,7 +31,6 @@ class UserResource extends Resource
                 ->dehydrated(fn ($state) => filled($state)),
             Select::make('roles')
                 ->relationship('roles', 'name')
-                ->options(['manager' => 'Manager', 'sales_officer' => 'Sales Officer'])
                 ->required(),
         ]);
     }

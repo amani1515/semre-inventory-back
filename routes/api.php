@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -28,5 +29,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('sales/{sale}',  [SaleController::class, 'show']);
 
     // Approval routes (Step 9)
-    // Report routes (Step 10)
+    // Report routes
+    Route::prefix('reports')->group(function () {
+        Route::get('sales', [ReportController::class, 'sales']);
+        Route::get('stock', [ReportController::class, 'stock']);
+    });
 });
