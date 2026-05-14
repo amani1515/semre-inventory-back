@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\SaleController;
 use Illuminate\Support\Facades\Route;
 
 // Public auth routes
@@ -21,6 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Inventory routes
     Route::get('inventory', [InventoryController::class, 'index']);
     Route::post('inventory/{product}/stock-in', [InventoryController::class, 'stockIn']);
-    // Sales routes (Steps 8 & 9)
+    // Sales routes
+    Route::get('sales',         [SaleController::class, 'index']);
+    Route::post('sales',        [SaleController::class, 'store']);
+    Route::get('sales/{sale}',  [SaleController::class, 'show']);
+
+    // Approval routes (Step 9)
     // Report routes (Step 10)
 });
