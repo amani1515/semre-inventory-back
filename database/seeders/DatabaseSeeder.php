@@ -19,8 +19,9 @@ class DatabaseSeeder extends Seeder
         $manager = User::firstOrCreate(
             ['email' => 'manager@semre.com'],
             [
-                'name'     => 'Manager User',
-                'password' => Hash::make('password'),
+                'name'              => 'Manager User',
+                'password'          => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
         $manager->assignRole($managerRole);
@@ -29,8 +30,9 @@ class DatabaseSeeder extends Seeder
         $salesOfficer = User::firstOrCreate(
             ['email' => 'sales@semre.com'],
             [
-                'name'     => 'Sales Officer',
-                'password' => Hash::make('password'),
+                'name'              => 'Sales Officer',
+                'password'          => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
         $salesOfficer->assignRole($salesOfficerRole);
