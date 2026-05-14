@@ -37,7 +37,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // temporarily open, restrict after login confirmed
+        return $this->hasRole('manager');
     }
 
     public function sales(): HasMany
