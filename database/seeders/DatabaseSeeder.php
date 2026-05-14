@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         $salesOfficerRole = Role::firstOrCreate(['name' => 'sales_officer']);
 
         // Manager user
-        $manager = User::firstOrCreate(
+        $manager = User::updateOrCreate(
             ['email' => 'manager@semre.com'],
             [
                 'name'              => 'Manager User',
@@ -24,10 +24,10 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $manager->assignRole($managerRole);
+        $manager->syncRoles($managerRole);
 
         // Sales officer user
-        $salesOfficer = User::firstOrCreate(
+        $salesOfficer = User::updateOrCreate(
             ['email' => 'sales@semre.com'],
             [
                 'name'              => 'Sales Officer',
@@ -35,6 +35,6 @@ class DatabaseSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $salesOfficer->assignRole($salesOfficerRole);
+        $salesOfficer->syncRoles($salesOfficerRole);
     }
 }
