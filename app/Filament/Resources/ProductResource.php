@@ -2,17 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\ProductsExport;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductResource extends Resource
 {
@@ -44,6 +50,30 @@ class ProductResource extends Resource
                 TextColumn::make('stock_quantity')->sortable()
                     ->color(fn ($state) => $state <= 5 ? 'danger' : 'success'),
                 TextColumn::make('updated_at')->dateTime()->sortable(),
+            ])
+            ->filters([
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('date_from')->label('From'),
+                        DatePicker::make('date_to')->label('To'),
+                    ])
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['date_from'], fn ($q) => $q->whereDate('created_at', '>=', $data['date_from']))
+                        ->when($data['date_to'],   fn ($q) => $q->whereDate('created_at', '<=', $data['date_to']))
+                    ),
+            ])
+            ->headerActions([
+                Action::make('export')
+                    ->label('Export to Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->form([
+                        DatePicker::make('date_from')->label('From'),
+                        DatePicker::make('date_to')->label('To'),
+                    ])
+                    ->action(fn (array $data) => Excel::download(
+                        new ProductsExport($data['date_from'], $data['date_to']),
+                        'products-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

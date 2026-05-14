@@ -10,41 +10,36 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class SalesExport implements FromQuery, WithHeadings, WithMapping
 {
     public function __construct(
-        private string $period,
-        private ?string $date = null
+        protected ?string $dateFrom = null,
+        protected ?string $dateTo = null,
+        protected ?string $status = null,
     ) {}
 
     public function query()
     {
-        $query = Sale::with(['user', 'items'])
-            ->whereIn('status', ['completed', 'approved']);
-
-        if ($this->period === 'daily') {
-            $query->whereDate('created_at', $this->date ?? today());
-        } elseif ($this->period === 'monthly') {
-            $query->whereYear('created_at', now()->year)
-                  ->whereMonth('created_at', $this->date ?? now()->month);
-        }
-
-        return $query;
+        return Sale::with(['user', 'approvedBy'])
+            ->when($this->dateFrom, fn ($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
+            ->when($this->dateTo,   fn ($q) => $q->whereDate('created_at', '<=', $this->dateTo))
+            ->when($this->status,   fn ($q) => $q->where('status', $this->status));
     }
 
     public function headings(): array
     {
-        return ['Sale #', 'Sales Officer', 'Subtotal (ETB)', 'Discount (%)', 'VAT (ETB)', 'Total (ETB)', 'Status', 'Date'];
+        return ['Sale #', 'Sales Officer', 'Subtotal (ETB)', 'Discount (%)', 'VAT (ETB)', 'Total (ETB)', 'Status', 'Approved By', 'Date'];
     }
 
-    public function map($sale): array
+    public function map($row): array
     {
         return [
-            $sale->id,
-            $sale->user->name ?? '-',
-            $sale->subtotal,
-            $sale->discount,
-            $sale->vat_amount,
-            $sale->total,
-            $sale->status,
-            $sale->created_at->format('Y-m-d H:i'),
+            $row->id,
+            $row->user?->name,
+            $row->subtotal,
+            $row->discount,
+            $row->vat_amount,
+            $row->total,
+            $row->status,
+            $row->approvedBy?->name ?? '-',
+            $row->created_at->format('Y-m-d H:i'),
         ];
     }
 }

@@ -2,15 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\InventoryExport;
 use App\Filament\Resources\InventoryResource\Pages;
 use App\Models\Product;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryResource extends Resource
 {
@@ -36,6 +41,30 @@ class InventoryResource extends Resource
                 TextColumn::make('stock_quantity')->label('Stock')->sortable()
                     ->color(fn ($state) => $state <= 5 ? 'danger' : ($state <= 20 ? 'warning' : 'success')),
                 TextColumn::make('updated_at')->label('Last Updated')->dateTime()->sortable(),
+            ])
+            ->filters([
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('date_from')->label('From'),
+                        DatePicker::make('date_to')->label('To'),
+                    ])
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['date_from'], fn ($q) => $q->whereDate('updated_at', '>=', $data['date_from']))
+                        ->when($data['date_to'],   fn ($q) => $q->whereDate('updated_at', '<=', $data['date_to']))
+                    ),
+            ])
+            ->headerActions([
+                Action::make('export')
+                    ->label('Export to Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->form([
+                        DatePicker::make('date_from')->label('From'),
+                        DatePicker::make('date_to')->label('To'),
+                    ])
+                    ->action(fn (array $data) => Excel::download(
+                        new InventoryExport($data['date_from'], $data['date_to']),
+                        'inventory-' . now()->format('Y-m-d') . '.xlsx'
+                    )),
             ])
             ->actions([
                 Action::make('stock_in')
