@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +18,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Product routes
     Route::apiResource('products', ProductController::class);
-    // Inventory routes (Step 7)
+    // Inventory routes
+    Route::get('inventory', [InventoryController::class, 'index']);
+    Route::post('inventory/{product}/stock-in', [InventoryController::class, 'stockIn']);
     // Sales routes (Steps 8 & 9)
     // Report routes (Step 10)
 });
